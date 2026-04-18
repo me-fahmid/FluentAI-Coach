@@ -8,16 +8,32 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// ✅ CORS FIX (IMPORTANT)
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://fluentai-coach.onrender.com'
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
   credentials: true
 }));
+
+// ✅ Preflight fix
+app.options('*', cors());
+
+// Middleware
 app.use(morgan('combined'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 🔥 MongoDB Connection FIX
+// ✅ MongoDB Connection FIX
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGO_URI;
 
 if (!MONGO_URI) {
@@ -46,7 +62,7 @@ app.get('/api/health', (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
+  console.error('Error:', err.message);
   res.status(err.status || 500).json({
     error: err.message || 'Internal Server Error'
   });
