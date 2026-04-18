@@ -1,3 +1,4 @@
+console.log("🔥 ENV CHECK:", process.env.OPENAI_API_KEY);
 const OpenAI = require("openai");
 
 const openai = new OpenAI({
